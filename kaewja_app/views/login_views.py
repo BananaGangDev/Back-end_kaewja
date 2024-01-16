@@ -1,2 +1,1 @@
-from global_views import *
-
+import global_views
