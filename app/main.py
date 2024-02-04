@@ -1,11 +1,11 @@
 # Web
 import uvicorn
 from fastapi import FastAPI
-from src.auth.router import router as auth_routes
-from src.concordancer.router import router as concor_routes
-from src.error_tagger.router import router as errortag_routes
-from src.file_system.router import router as file_routes
-from src.tagset.router import router as tagset_routes
+from src.auth.routers import router as auth_routes
+from app.src.concordancer.routers import router as concor_routes
+from app.src.error_tagger.routers import router as errortag_routes
+from app.src.file_system.routers import router as file_routes
+from app.src.tagset.routers import router as tagset_routes
 
 
 

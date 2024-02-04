@@ -1,14 +1,13 @@
 from google.cloud.sql.connector import Connector
 from google.cloud import secretmanager
-import pg8000
-import sqlalchemy
+from sqlalchemy import create_engine
 
 class Database:
     
     def __init__(self, name):
         self.connector = Connector()
         self.db_name = name
-        self.pw = self.get_password("engaged-arcanum-412912","cloudsql_pwd","1")    
+        self.pw = self._get_password("engaged-arcanum-412912","cloudsql_pwd","1")    
     def _get_conn(self):
         
         conn = self.connector.connect(
@@ -29,9 +28,9 @@ class Database:
         password = response.payload.data.decode("UTF-8")
         return password
     def get_db(self):
-        pool= sqlalchemy.create_engine(
+        pool = create_engine(
             "postgresql+pg8000://",
-            creator=self.get_conn)
+            creator=self._get_conn)
         return pool
     
 
