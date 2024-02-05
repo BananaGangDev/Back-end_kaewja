@@ -1,4 +1,5 @@
 from google.cloud.sql.connector import Connector
+from google.cloud import Storage
 from google.cloud import secretmanager
 from sqlalchemy import create_engine
 
@@ -38,12 +39,21 @@ class Database:
 class Storage():
     
     
-    def __init__():
-        pass
-    
-    def get_storage():
-        pass
-    
-    def close_storage():
-        pass
+    def __init__(self):
+        self.global_bucket_name = self._get_bucket_name()
         
+    
+    
+    def _get_bucket_name(self, project_id, secret_id, version_id):
+        path = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
+        
+        
+    
+    def _create_bucket(self, bucket_name, storage_class="STANDARD", location="us-west1"):
+        pass
+    
+    def upload_file(bucket_name:str, source_name, destination):
+        pass
+    
+    def delete_file():
+        pass

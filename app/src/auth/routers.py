@@ -12,7 +12,6 @@ def index():
     
     db_conn = conn.Database("db-dev")
     
-    
     with db_conn.get_db().connect() as db:
         results = db.execute(sqlalchemy.text("SELECT NOW();")).fetchall()
         
