@@ -1,30 +1,37 @@
-from fastapi import APIRouter
-import sqlalchemy
-from src import connections as conn
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
+# Jwt
+from datetime import timedelta, datetime
+from typing import Annotated
+
+
+# Data
+from .crud import (get_users_by_id)
+from src.connections import global_db
+#from .schemas import  Response
 
 router = APIRouter(
+    prefix="/auth",
     tags=["Authentication"]
 )
 
-@router.get("/")
-def index():
-    
-    db_conn = conn.Database("db-dev")
-    
-    with db_conn.get_db().connect() as db:
-        results = db.execute(sqlalchemy.text("SELECT NOW();")).fetchall()
+def get_db():
+    db = global_db.get_sessionlocal()
+    try:
+        yield db
         
-        print(type(results))
-        print(results)
-
-    return {"data": results[0][0].strftime("%Y-%m-%d %H:%M:%S.%f %Z")}
-
-@router.get('/login')
-def login_page():
-    return {"page": "Login page"}
+    finally:
+        db.close()
 
 
-@router.get("/changepassword")
-def changepassword_page():
-    pass
+SECRET_KEY = ""
+ALGORITHM = "H5256"
+
+
+
+@router.get("/")
+def index(db: Session=Depends(get_db)):
+    users = get_users_by_id(db,1)
+    return {"data": users}
+
