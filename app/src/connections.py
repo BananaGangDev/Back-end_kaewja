@@ -9,11 +9,16 @@ from sqlalchemy.ext.declarative import declarative_base
 
 class Database: 
     def __init__(self):
+        # user
         self.connector = Connector()
         self.client = secretmanager.SecretManagerServiceClient()
+        
         self.path = "projects/{id}/secrets/{secret}/versions/{ver}"
+        
         self.db_name = self._get_secret("engaged-arcanum-412912","active_db","1")
         self.pw = self._get_secret("engaged-arcanum-412912","cloudsql_pwd","1")
+        self.instance = self._get_secret()
+        
         self.engine = create_engine(
             "postgresql+pg8000://",
             creator=self._get_conn, connect_args={'check_same_thread':False})
@@ -43,6 +48,9 @@ class Database:
         return self.base
     def get_engine(self):
         return self.engine
+    
+    
+
 class Storage:
     
     def __init__(self):
