@@ -16,7 +16,7 @@ class Users(Base):
     password = Column(String(100), nullable=False)
     role = Column(SmallInteger, ForeignKey("role.role_id"), nullable=False)
     
-    user_info = relationship("UserInfo", back_populates="user")
+    user_info = relationship("UserInfo", back_populates="users")
     user_role = relationship("Role", back_populates="role")
 
 
@@ -31,9 +31,7 @@ class UserInfo(Base):
     start_register = Column(Date, nullable=False)
     end_register = Column(Date, nullable=True)
     
-    user = relationship("Users", uselist=False, back_populates="user_info") # one-to-one
-    
-    
+    user = relationship("Users", back_populates="user_info") # one-to-one    
 class Role(Base):
     __tablename__ = "role"
     
@@ -43,6 +41,6 @@ class Role(Base):
     
     role = relationship("Users", back_populates="user_role")
     
-    
-# !! Add the token class in db
-
+#// JWT
+class Token():
+    pass

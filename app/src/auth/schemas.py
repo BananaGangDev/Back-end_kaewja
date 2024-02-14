@@ -14,8 +14,6 @@ class UserSchema(BaseModel):
     
     class Config:
         orm_mode = True
-    
-    
 class UserInfoSchema(BaseModel):
     user_info_id: PositiveInt
     firstname: str = Field(..., max_length=100)
@@ -25,15 +23,17 @@ class UserInfoSchema(BaseModel):
     end_register: Optional[date]
     class Config:
         orm_mode = True
-    
-    
 class RoleSchema(BaseModel):
     role_id: PositiveInt
+    # TODO: write the REGEX
     role_name: str = Field(..., pattern=r"")
     role_description: Optional[str]
     class Config:
         orm_mode = True
-    
+
+#// JWT
 class Token(BaseModel):
     access_token: str
     token_type: str
+class UserRequest(BaseModel):
+    pass

@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session  
 from .models import (Users)
 from .schemas import UserSchema
 
@@ -28,4 +28,12 @@ def delete_user(db:Session, user_id):
     _user = get_users_by_id(db=db, user_id=user_id)
     db.delete(_user)
     db.commit()
+    
+    
+# // JWT
+def create_access_token(self):
+    pass
+def autheticate_user(self):
+    pass
+
     
