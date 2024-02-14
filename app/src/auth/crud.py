@@ -23,8 +23,7 @@ def update_password(db:Session, user_id:UserSchema, pw: str):
     db.commit()
     db.refresh()
     return _user
-    
-    
+        
 def delete_user(db:Session, user_id):
     _user = get_users_by_id(db=db, user_id=user_id)
     db.delete(_user)
