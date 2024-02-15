@@ -1,7 +1,7 @@
 # 1st ORM
 from sqlalchemy import Column, String, SmallInteger, Date, ForeignKey
 from sqlalchemy.orm import relationship
-from connections import global_db
+from src.connections import global_db
 
 Base = global_db.get_base()
 

@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from .models import (Tagset, LabelTagset, LabelInfo)
 from .crud import (TagsetSchema)
-from connections import global_db
+from src.connections import global_db
 
-
+#// Tagset
 # TODO: GET -> get all tagsets
 def get_tagsets(db:Session):
     return db.query(Tagset).all()
@@ -41,3 +41,15 @@ def delete_tagset(db:Session, tagset_id:int):
     db.delete(_tg)
     db.commit()
     
+    
+#// Label
+
+# TODO: POST -> Create label
+def create_label():
+    pass
+
+# TODO: GET ->  get all labeld
+
+# TODO: DELETE -> delete the label
+
+# TODO: PUT -> Edit the label (Tag, description)

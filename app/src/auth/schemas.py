@@ -14,6 +14,7 @@ class UserSchema(BaseModel):
     
     class Config:
         orm_mode = True
+        
 class UserInfoSchema(BaseModel):
     user_info_id: PositiveInt
     firstname: str = Field(..., max_length=100)
@@ -21,13 +22,16 @@ class UserInfoSchema(BaseModel):
     email: Optional[EmailStr]
     start_register: date
     end_register: Optional[date]
+        
     class Config:
         orm_mode = True
+        
 class RoleSchema(BaseModel):
     role_id: PositiveInt
     # TODO: write the REGEX
     role_name: str = Field(..., pattern=r"")
     role_description: Optional[str]
+        
     class Config:
         orm_mode = True
 

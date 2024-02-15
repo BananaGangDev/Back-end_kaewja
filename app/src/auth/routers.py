@@ -12,7 +12,6 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 # Data
 from .crud import (get_users_by_id)
 from src.connections import global_db
-from .schemas import  Response, Token
 from .models import Users
 
 router = APIRouter(
@@ -42,6 +41,6 @@ def index(db: Session=Depends(get_db)):
 
 
 #// JWT
-@router.post("/token", response_model=Token)
+@router.post("/token")
 def login_for_access_token(self):
     pass
