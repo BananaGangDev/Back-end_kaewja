@@ -17,7 +17,6 @@ class Database:
         
         self.db_name = self._get_secret("engaged-arcanum-412912","active_db","1")
         self.pw = self._get_secret("engaged-arcanum-412912","cloudsql_pwd","1")
-        self.instance = self._get_secret()
         
         self.engine = create_engine(
             "postgresql+pg8000://",
