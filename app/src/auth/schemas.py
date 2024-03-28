@@ -10,6 +10,8 @@ class UserSchema(BaseModel):
     user_id: PositiveInt
     username: str = Field(..., max_length=100)
     password: str = Field(..., max_length=100)
+    firstname: str = Field(..., max_length=100)
+    lastname: str = Field(..., max_length=100)
     role: PositiveInt
     email: Optional[EmailStr]
     start_register: date
@@ -40,7 +42,7 @@ class RoleSchema(BaseModel):
 
 #// JWT
 class requestdetails(BaseModel):
-    user_id : int
+    username : int
     password: str
 
 class TokenSchema(BaseModel):

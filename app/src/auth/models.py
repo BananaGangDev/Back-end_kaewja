@@ -14,6 +14,8 @@ class Users(Base):
     user_id = Column(SmallInteger, primary_key=True)
     username = Column(String(100), nullable=False)
     password = Column(String(100), nullable=False)
+    firstname = Column(String(100), nullable=False)
+    lastname = Column(String(100), nullable=False)
     role = Column(SmallInteger, ForeignKey("role.role_id"), nullable=False)
     email = Column(String(200), nullable=True, unique=True)
     start_register = Column(Date, nullable=False)

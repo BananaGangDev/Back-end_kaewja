@@ -6,9 +6,10 @@ from datetime import datetime , timezone , timedelta
 import jwt
 from src.connections import global_db
 from passlib.context import CryptContext
-SECRET_KEY = global_db._get_secret("kaewja","secret_kay",1)
-REFRESH_KEY = global_db._get_secret("kaewja","refresh_key",1)
-ALGORITHM = global_db._get_secret("kaewja","algorithm",1)
+
+SECRET_KEY = global_db._get_secret("engaged-arcanum-412912","secret_key",1)
+REFRESH_KEY = global_db._get_secret("engaged-arcanum-412912","refresh_key",1)
+ALGORITHM = global_db._get_secret("engaged-arcanum-412912","algorithm",1)
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 # 30 Minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 Days
 password_context = CryptContext(schemes=["bcrypt"],deprecated="auto")
@@ -20,24 +21,16 @@ def get_user_by_id(db:Session, user_id:int):
     return db.query(Users).filter(Users.user_id == user_id).first()
 
 def create_user(db:Session, user:UserSchema,):
-    _user = Users(username=user.username, password=user.password, role=user.role, email=user.email, start_register=user.start_register)
+    _user = Users(user_id='1000' + str(len(get_users)+1),username=user.username, password=user.password, role=user.role, email=user.email, start_register=user.start_register)
     db.add(_user)
     db.commit()
     db.refresh(_user)
     return _user
-    
-def update_password(db:Session, user_id:UserSchema, pw: str):
-    _user = db.query(Users).filter(Users.user_id == user_id).first()
-    _user.password = pw
-    db.commit()
-    db.refresh()
-    return _user
         
-def delete_user(db:Session, user_id):
-    _user = get_user_by_id(db=db, user_id=user_id)
+def delete_user(db:Session, username):
+    _user = get_user_by_id(db=db, user_id=username)
     db.delete(_user)
     db.commit()
-    
     
 # // JWT
 def create_access_token(subject: Union[str, Any], expires_delta: timedelta | None = None):
@@ -66,14 +59,17 @@ def verify_password(plain_password,hashed_password):
 def get_password_hash(password):
     return password_context.hash(password)
     
-def update_user(db:Session, user_info: schemas.UserInfo):
+def update_user(db:Session, user_info: UserSchema):
     _user_info = get_user_by_id(db=db, user_id=user_info.student_info_id)
+    _user_info.user_id = user_info.user_id
+    _user_info.username = user_info.username
+    _user_info.password = get_password_hash(user_info.password)
     _user_info.firstname = user_info.firstname
     _user_info.lastname = user_info.lastname
-    _user_info.phone = user_info.phone
-    _user_info.major = user_info.major
-    _user_info.year = user_info.year
-    _user_info.password = get_password_hash(user_info.password)
+    _user_info.role = user_info.role
+    _user_info.enail = user_info.email
+    _user_info.start_register = user_info.start_register
+    _user_info.end_register = user_info.end_register
     
     db.commit()
     db.refresh(_user_info)
