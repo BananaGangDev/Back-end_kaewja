@@ -8,9 +8,9 @@ from src.connections import global_db
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 30 minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
-ALGORITHM = global_db._get_secret("enbooking","algorithm",1)
-SECRET_KEY = global_db._get_secret("enbooking","secret_key",2)
-REFRESH_SECRET_KEY = global_db._get_secret("enbooking","refresh_secret_key",2)
+ALGORITHM = global_db._get_secret("engaged-arcanum-412912","algorithm",2)
+SECRET_KEY = global_db._get_secret("engaged-arcanum-412912","secret_key",1)
+REFRESH_SECRET_KEY = global_db._get_secret("engaged-arcanum-412912","refresh_key",1)
 
 def decodeJWT(jwtoken: str):
     try:
