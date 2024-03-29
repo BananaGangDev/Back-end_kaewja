@@ -1,7 +1,7 @@
 from typing import Any, Union
 from sqlalchemy.orm import Session  
 from .models import (Users)
-from .schemas import UserSchema
+from .schemas import UserSchema,CreateNewUser
 from datetime import datetime , timezone , timedelta
 import jwt
 from src.connections import global_db
@@ -9,7 +9,7 @@ from passlib.context import CryptContext
 
 SECRET_KEY = global_db._get_secret("engaged-arcanum-412912","secret_key",1)
 REFRESH_KEY = global_db._get_secret("engaged-arcanum-412912","refresh_key",1)
-ALGORITHM = global_db._get_secret("engaged-arcanum-412912","algorithm",1)
+ALGORITHM = global_db._get_secret("engaged-arcanum-412912","algorithm",2)
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 # 30 Minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 Days
 password_context = CryptContext(schemes=["bcrypt"],deprecated="auto")
@@ -17,18 +17,19 @@ password_context = CryptContext(schemes=["bcrypt"],deprecated="auto")
 def get_users(db:Session):
     return db.query(Users).all()
        
-def get_user_by_id(db:Session, user_id:int):
-    return db.query(Users).filter(Users.user_id == user_id).first()
+def get_user_by_username(db:Session, username:str):
+    return db.query(Users).filter(Users.username == username).first()
 
-def create_user(db:Session, user:UserSchema,):
-    _user = Users(user_id='1000' + str(len(get_users)+1),username=user.username, password=user.password, role=user.role, email=user.email, start_register=user.start_register)
+def create_user(db:Session, user:CreateNewUser):
+    _user = Users(user_id=1000+(db.query(Users).count()+1),username=user.username, password=get_password_hash(user.password),firstname=user.firstname,lastname=user.lastname, role=user.role, email=user.email, start_register=datetime.now().date()
+        )
     db.add(_user)
     db.commit()
     db.refresh(_user)
     return _user
         
 def delete_user(db:Session, username):
-    _user = get_user_by_id(db=db, user_id=username)
+    _user = get_user_by_username(db=db, username=username)
     db.delete(_user)
     db.commit()
     

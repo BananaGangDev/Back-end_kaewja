@@ -22,7 +22,7 @@ router = APIRouter(
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 # 30 Minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 Days
-ALGORITHM = global_db._get_secret("engaged-arcanum-412912","algorithm",1)
+ALGORITHM = global_db._get_secret("engaged-arcanum-412912","algorithm",2)
 SECRET_KEY = global_db._get_secret("engaged-arcanum-412912","secret_key",1)
 REFRESH_SECRET_KEY = global_db._get_secret("engaged-arcanum-412912","refresh_key",1)
 
@@ -38,13 +38,13 @@ def get_db():
 
 @router.get("/")
 def index(db: Session=Depends(get_db)):
-    users = crud.get_user_by_id(db,1)
+    users = crud.get_users(db)
     return {"data": users}
 
 #login
 @router.post("/login/",status_code=200)
 async def log_in(login_item:schemas.requestdetails ,db:Session=Depends(get_db)):
-    user = crud.get_user_by_id(db,user_id=login_item.username)
+    user = crud.get_user_by_username(db,username=login_item.username)
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This ID doesn't have account. Please sign up.")
     
@@ -54,34 +54,35 @@ async def log_in(login_item:schemas.requestdetails ,db:Session=Depends(get_db)):
     access=crud.create_access_token(user.username,expires_delta=ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh = crud.create_refresh_token(user.username,expires_delta=REFRESH_TOKEN_EXPIRE_MINUTES)
 
-    token_db = TokenTable(user_id=user.username,  access_token=access,  refresh_token=refresh, status=True)
+    token_db = TokenTable(user_id=user.user_id,  access_token=access,  refresh_token=refresh, status=True)
     db.add(token_db)
     db.commit()
     db.refresh(token_db)
     return {
+        "user_id" : user.user_id,
         "access_token": access,
         "refresh_token": refresh,
     }
     
 #Sign up ห้ามแก้
 @router.post("/create_new_user/", status_code=201) 
-async def register_user(user: schemas.UserSchema,db: Session=Depends(get_db)):
+async def register_user(user: schemas.CreateNewUser,db: Session=Depends(get_db)):
     existing_user = db.query(Users).filter_by(username=user.username).first()
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID is already registered.")
     
-    new_user = crud.create_user(user_info=user)
+    new_user = crud.create_user(db=db,user=user)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     return {"message":"user created successfully"}
 
 @router.get('/get_uavailable_token_user')
-def get_users_log_in( dependencies=Depends(JWTBearer()),db: Session = Depends(get_db)):
+def get_users_log_in(db: Session = Depends(get_db)):
     return db.query(TokenTable).filter_by(status=True).all()
 
 @router.post('/change-password')
-def change_password(request: schemas.changepassword, db: Session = Depends(get_db)):
+def change_password(request: schemas.changepassword, db: Session = Depends(get_db),dependencies=Depends(JWTBearer())):
     user = db.query(Users).filter(Users.username == request.username).first()
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
@@ -106,10 +107,6 @@ def logout(dependencies=Depends(JWTBearer()), db: Session = Depends(get_db)):
         print("record",record)
         if (datetime.now(timezone.utc).replace(tzinfo=None) - record.created_date).days > 1:
             info.append(record.user_id)
-    if info:
-        db.delete(info)
-        #existing_token = db.query(models.TokenTable).where(models.TokenTable.user_id==info.user_id).delete()
-        db.commit()
         
     existing_token = db.query(TokenTable).filter(TokenTable.access_token==token).first()
     if existing_token:

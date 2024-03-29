@@ -19,16 +19,16 @@ class UserSchema(BaseModel):
     class Config:
         from_attributes=True
         
-# class UserInfoSchema(BaseModel):
-#     user_info_id: PositiveInt
-#     firstname: str = Field(..., max_length=100)
-#     lastname: str = Field(..., max_length=100)
-#     email: Optional[EmailStr]
-#     start_register: date
-#     end_register: Optional[date]
-        
-#     class Config:
-#         orm_mode = True
+class CreateNewUser(BaseModel):
+    username: str = Field(..., max_length=100)
+    password: str = Field(..., max_length=100)
+    firstname: str = Field(..., max_length=100)
+    lastname: str = Field(..., max_length=100)
+    role: PositiveInt
+    email: Optional[EmailStr]
+    
+    class Config:
+        orm_mode = True
         
 class RoleSchema(BaseModel):
     role_id: PositiveInt
@@ -41,7 +41,7 @@ class RoleSchema(BaseModel):
 
 #// JWT
 class requestdetails(BaseModel):
-    username : int
+    username : str
     password: str
 
 class TokenSchema(BaseModel):
