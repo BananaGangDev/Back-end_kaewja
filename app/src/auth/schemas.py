@@ -43,15 +43,24 @@ class RoleSchema(BaseModel):
 class requestdetails(BaseModel):
     username : str
     password: str
+    
+    class Config:
+        orm_mode = True
 
 class TokenSchema(BaseModel):
     access_token: str
     refresh_token: str
+    
+    class Config:
+        orm_mode = True
 
 class changepassword(BaseModel):
     user_id: int
     old_password: str
     new_password: str
+    
+    class Config:
+        orm_mode = True
 
 class TokenCreate(BaseModel):
     user_id: int
@@ -60,5 +69,11 @@ class TokenCreate(BaseModel):
     status: bool
     created_date:datetime
     
+    class Config:
+        orm_mode = True
+    
 class TokenData(BaseModel):
     user_id: int | None = None
+    
+    class Config:
+        orm_mode = True

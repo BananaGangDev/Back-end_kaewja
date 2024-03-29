@@ -83,7 +83,7 @@ def get_users_log_in(db: Session = Depends(get_db)):
 
 @router.post('/change-password')
 def change_password(request: schemas.changepassword, db: Session = Depends(get_db),dependencies=Depends(JWTBearer())):
-    user = db.query(Users).filter(Users.username == request.username).first()
+    user = db.query(Users).filter(Users.user_id == request.user_id).first()
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
     
