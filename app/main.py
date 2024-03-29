@@ -1,6 +1,7 @@
 # Web
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 # routes
 from src.auth.routers import router as auth_routes
@@ -14,7 +15,25 @@ from src.connections import global_db
 
 global_db.get_base().metadata.create_all(bind=global_db.get_engine())
 
-app = FastAPI()
+app = FastAPI(
+    title="Kaewja"
+)
+
+origins = [
+    'http://localhost',
+    'http://localhost:5660',
+    'http://localhost:5173'
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=["*"],
+)
+
+
 app.include_router(auth_routes)
 app.include_router(concor_routes)
 app.include_router(errortag_routes)

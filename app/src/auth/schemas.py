@@ -1,10 +1,8 @@
 # 2nd ORM
 from pydantic import BaseModel, Field, EmailStr, PositiveInt
 from typing import List, Optional, Generic, TypeVar
-from pydantic.generics import GenericModel
 from datetime import date
 
-T = TypeVar("T")
 
 class UserSchema(BaseModel):
     user_id: PositiveInt
@@ -13,7 +11,7 @@ class UserSchema(BaseModel):
     role: PositiveInt
     
     class Config:
-        orm_mode = True
+        from_attributes=True
         
 class UserInfoSchema(BaseModel):
     user_info_id: PositiveInt
@@ -24,7 +22,7 @@ class UserInfoSchema(BaseModel):
     end_register: Optional[date]
         
     class Config:
-        orm_mode = True
+        from_attributes=True
         
 class RoleSchema(BaseModel):
     role_id: PositiveInt
@@ -33,7 +31,7 @@ class RoleSchema(BaseModel):
     role_description: Optional[str]
         
     class Config:
-        orm_mode = True
+        from_attributes=True
 
 #// JWT
 class Token(BaseModel):
