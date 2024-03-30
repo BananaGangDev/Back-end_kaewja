@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import or_ 
 
 # Jwt
 from datetime import timedelta, datetime, timezone
@@ -65,19 +66,20 @@ async def log_in(login_item:schemas.requestdetails ,db:Session=Depends(get_db)):
     }
     
 #Sign up ห้ามแก้
-@router.post("/create_new_user/", status_code=201) 
+@router.post("/create-new-user/", status_code=201) 
 async def register_user(user: schemas.CreateNewUser,db: Session=Depends(get_db)):
-    existing_user = db.query(Users).filter_by(username=user.username).first()
-    if existing_user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID is already registered.")
+    if user.email:
+        existing_user = db.query(Users).filter(or_(Users.username==user.username,Users.email==user.email,)).first()
+        if existing_user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID is already registered.")
     
     new_user = crud.create_user(db=db,user=user)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    # db.add(new_user)
+    # db.commit()
+    # db.refresh(new_user)
     return {"message":"user created successfully"}
 
-@router.get('/get_uavailable_token_user')
+@router.get('/get_available_token_user')
 def get_users_log_in(db: Session = Depends(get_db)):
     return db.query(TokenTable).filter_by(status=True).all()
 
@@ -92,8 +94,7 @@ def change_password(request: schemas.changepassword, db: Session = Depends(get_d
     
     encrypted_password = crud.get_password_hash(request.new_password)
     user.password = encrypted_password
-    db.commit()
-    
+    crud.update_user(db=db,user_info=user)
     return {"message": "Password changed successfully"}
 
 @router.post('/logout')
@@ -108,10 +109,10 @@ def logout(dependencies=Depends(JWTBearer()), db: Session = Depends(get_db)):
         if (datetime.now(timezone.utc).replace(tzinfo=None) - record.created_date).days > 1:
             info.append(record.user_id)
         
-    existing_token = db.query(TokenTable).filter(TokenTable.access_token==token).first()
-    if existing_token:
-        existing_token.status=False
-        db.add(existing_token)
-        db.commit()
-        db.refresh(existing_token)
-    return {"message":"Logout Successfully"} 
+    access_token = db.query(TokenTable).filter(TokenTable.access_token==token).first().access_token
+    if access_token:
+        existing_token = crud.update_status_token(db=db,access_token=access_token)
+        if existing_token and existing_token.status == False:
+            return {"message":"Logout Successfully"} 
+        else : 
+            return {"message":"Invalid Token"}
