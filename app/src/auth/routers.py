@@ -71,7 +71,7 @@ async def register_user(user: schemas.CreateNewUser,db: Session=Depends(get_db))
     if user.email:
         existing_user = db.query(Users).filter(or_(Users.username==user.username,Users.email==user.email,)).first()
         if existing_user:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID is already registered.")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID or Email is already registered.")
     
     new_user = crud.create_user(db=db,user=user)
     # db.add(new_user)
