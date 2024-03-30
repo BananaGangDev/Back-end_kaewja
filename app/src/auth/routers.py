@@ -97,6 +97,21 @@ def change_password(request: schemas.changepassword, db: Session = Depends(get_d
     crud.update_user(db=db,user_info=user)
     return {"message": "Password changed successfully"}
 
+@router.post('forget-password')
+def forget_password(username,firstname,lastname,new_password,db:Session = Depends(get_db)):
+    user = crud.get_user_by_username(username)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Username is incorrect")
+    if user.firstname != firstname:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Firstname is incorrect")
+    if user.lastname != lastname:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Lastname is incorrect")
+    else : 
+        encrypted_password = crud.get_password_hash(new_password)
+        user.password = encrypted_password
+        crud.update_user(db=db,user_info=user)
+        return {"message": "Password changed successfully"}
+            
 @router.post('/logout')
 def logout(dependencies=Depends(JWTBearer()), db: Session = Depends(get_db)):
     token=dependencies
