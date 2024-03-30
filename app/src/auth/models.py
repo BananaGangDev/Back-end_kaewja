@@ -23,6 +23,7 @@ class Users(Base):
     
     # user_info = relationship("UserInfo", back_populates="user")
     user_role = relationship("Role", back_populates="role")
+    
 
 
 #สร้างแล้ว     

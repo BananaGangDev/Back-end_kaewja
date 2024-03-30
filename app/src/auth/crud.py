@@ -1,7 +1,7 @@
 from typing import Any, Union
 from sqlalchemy.orm import Session  
-from .models import (Users)
-from .schemas import UserSchema,CreateNewUser
+from .models import Users,TokenTable
+from .schemas import UserSchema,CreateNewUser,TokenSchema
 from datetime import datetime , timezone , timedelta
 import jwt
 from src.connections import global_db
@@ -61,7 +61,7 @@ def get_password_hash(password):
     return password_context.hash(password)
     
 def update_user(db:Session, user_info: UserSchema):
-    _user_info = get_user_by_id(db=db, user_id=user_info.student_info_id)
+    _user_info = db.query(Users).filter(Users.user_id == user_info.user_id).first()
     _user_info.user_id = user_info.user_id
     _user_info.username = user_info.username
     _user_info.password = get_password_hash(user_info.password)
@@ -75,3 +75,10 @@ def update_user(db:Session, user_info: UserSchema):
     db.commit()
     db.refresh(_user_info)
     return _user_info
+
+def update_status_token(db:Session, access_token):
+    _token = db.query(TokenTable).filter(TokenTable.access_token==access_token).first()
+    _token.status = False
+    db.commit()
+    db.refresh(_token)
+    return _token
