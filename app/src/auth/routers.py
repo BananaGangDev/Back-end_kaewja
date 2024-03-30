@@ -99,7 +99,7 @@ def change_password(request: schemas.changepassword, db: Session = Depends(get_d
 
 @router.post('forget-password')
 def forget_password(username,firstname,lastname,new_password,db:Session = Depends(get_db)):
-    user = crud.get_user_by_username(username)
+    user = crud.get_user_by_username(username=username,db=db)
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Username is incorrect")
     if user.firstname != firstname:
