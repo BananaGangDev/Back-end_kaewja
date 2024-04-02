@@ -19,6 +19,7 @@ class Database:
         
         self.db_name = self._get_secret("engaged-arcanum-412912","active_db","1")
         self.pw = self._get_secret("engaged-arcanum-412912","cloudsql_pwd","1")
+        self.instance = self._get_secret("engaged-arcanum-412912", "instance", "1")
         
         self.engine = create_engine(
             "postgresql+pg8000://",
@@ -27,7 +28,7 @@ class Database:
         self.base = declarative_base()    
     def _get_conn(self):
         conn = self.connector.connect(
-            "engaged-arcanum-412912:us-west1:kaewja-instance",
+            "engaged-arcanum-412912:"+self.instance,
             "pg8000",
             user="postgres",
             password=self.pw,
@@ -35,8 +36,12 @@ class Database:
         )
         return conn 
     def _get_secret(self,project_id, secret_id, version_id):
-        response = self.client.access_secret_version(request={'name':self.path.format(id=project_id,secret=secret_id,ver=version_id)})
-        data = response.payload.data.decode("UTF-8")
+        try:
+            response = self.client.access_secret_version(request={'name':self.path.format(id=project_id,secret=secret_id,ver=version_id)})
+            data = response.payload.data.decode("UTF-8")
+        except Exception as error:
+            print(error)
+            
         return data
     
     # // Generally use
