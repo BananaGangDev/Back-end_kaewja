@@ -9,7 +9,7 @@ from passlib.context import CryptContext
 
 SECRET_KEY = global_db._get_secret("engaged-arcanum-412912","secret_key",1)
 REFRESH_KEY = global_db._get_secret("engaged-arcanum-412912","refresh_key",1)
-ALGORITHM = global_db._get_secret("engaged-arcanum-412912","algorithm",1)
+ALGORITHM = global_db._get_secret("engaged-arcanum-412912","algorithm",2)
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 # 30 Minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 Days
 password_context = CryptContext(schemes=["bcrypt"],deprecated="auto")

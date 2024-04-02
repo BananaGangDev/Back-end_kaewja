@@ -122,7 +122,7 @@ async def sys_rename_file(old_name:str, new_name:str):
             
         else:
             raise HTTPException(status_code=400, detail=f"{old_name} is not existing")
-    else:
+    else:   
         raise HTTPException(status_code=400, detail=f"The old name and new name is the same")
 
 @router.put("/change-folder-name", status_code=200)
