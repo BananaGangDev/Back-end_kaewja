@@ -97,7 +97,7 @@ def change_password(request: schemas.changepassword, db: Session = Depends(get_d
     crud.update_user(db=db,user_info=user)
     return {"message": "Password changed successfully"}
 
-@router.post('forget-password')
+@router.post('/forget-password')
 def forget_password(username,firstname,lastname,new_password,db:Session = Depends(get_db)):
     user = crud.get_user_by_username(username=username,db=db)
     if user is None:
