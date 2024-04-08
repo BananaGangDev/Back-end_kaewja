@@ -9,12 +9,11 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 
-
 # Data
 from src.auth import crud,schemas
 from src.auth.models import Users,TokenTable,Role
 from src.connections import global_db
-from src.auth.auth_bearer import JWTBearer
+# from src.auth.auth_bearer import JWTBearer
 
 router = APIRouter(
     prefix="/auth",
@@ -84,7 +83,7 @@ def get_users_log_in(db: Session = Depends(get_db)):
     return db.query(TokenTable).filter_by(status=True).all()
 
 @router.post('/change-password')
-def change_password(request: schemas.changepassword, db: Session = Depends(get_db),dependencies=Depends(JWTBearer())):
+def change_password(request: schemas.changepassword, db: Session = Depends(get_db)):
     user = db.query(Users).filter(Users.user_id == request.user_id).first()
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
@@ -113,10 +112,7 @@ def forget_password(username,firstname,lastname,new_password,db:Session = Depend
         return {"message": "Password changed successfully"}
             
 @router.post('/logout')
-def logout(dependencies=Depends(JWTBearer()), db: Session = Depends(get_db)):
-    token=dependencies
-    payload = jwt.decode(token, SECRET_KEY, ALGORITHM)
-    user_id = payload['sub']
+def logout(access,user_id, db: Session = Depends(get_db)):
     token_record = db.query(TokenTable).all()
     info=[]
     for record in token_record :
@@ -124,7 +120,7 @@ def logout(dependencies=Depends(JWTBearer()), db: Session = Depends(get_db)):
         if (datetime.now(timezone.utc).replace(tzinfo=None) - record.created_date).days > 1:
             info.append(record.user_id)
         
-    access_token = db.query(TokenTable).filter(TokenTable.access_token==token).first().access_token
+    access_token = db.query(TokenTable).filter(TokenTable.access_token==access).first().access_token
     if access_token:
         existing_token = crud.update_status_token(db=db,access_token=access_token)
         if existing_token and existing_token.status == False:
