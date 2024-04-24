@@ -17,6 +17,12 @@ async def all_uncleaned_paths(in_corpus:bool=False):
     else:
         return {'paths': result}
 
+#TODO
+@router.get("/")
+async def download_file(file_name:str):
+    pass
+
+
 @router.post("/create-folder")
 async def sys_create_folder(folder_name:str):
     
@@ -30,32 +36,20 @@ async def sys_create_folder(folder_name:str):
     else:
         raise HTTPException(status_code=400, detail=f"The folder name is incorrect")
     
-    
-## TODO: PUT -> Move file
-@router.put("/move-file")
-async def sys_move_file():
-    pass
+@router.post("/upload")
+async def sys_upload_file(file:UploadFile):
+    ALLOWED_TYPE = ["application/pdf", "text/plain", "application/msword"]
 
-# TODO: POST -> Upload file
-@router.post("upload-file")
-async def sys_upload_file():
-    pass
-
-
-@router.post("/upload-text", status_code=201)
-async def sys_upload_text(file_name:str, texts:str):
-    is_successful, result = global_st.upload_text(file_name=file_name, texts=texts)
-    
-    splitted_file_name = file_name.split("/")
-    folders = "/".join(splitted_file_name[:file_name.count("/")])
-    print(folders)
-    if check_existing(is_folder=True, in_corpus=False, name=folders):
-        if not is_successful:
-            raise HTTPException(status_code=503, detail="Service Unavailable, Google storage has a problem")
+    #// pdf, txt, docx
+    if file.content_type in ALLOWED_TYPE:
+        #// Storage
+        is_successful = global_st.upload_file(file=file)
+        if is_successful:
+            return {"detail": f"Upload {file.filename} successfully"}
         else:
-            return {"detail": f"Upload {file_name} successfully"}
+            raise HTTPException(status_code=500, detail=f"Service Unavailable, Storage has a problem")
     else:
-        raise HTTPException(status_code=400, detail=f"{file_name} is not existing")
+        raise HTTPException(status_code=400, detail=f"Cannot upload {file.filename}")
 
 
 @router.delete("/delete-file")
@@ -95,7 +89,7 @@ async def sys_delete_folder(folder_name:str):
 async def sys_turn_into_token():
     pass
 
-# TODO: PUT -> 
+# TODO: PUT -> safe state file
 @router.put("/save-file")
 async def sys_save_status_file():
     pass

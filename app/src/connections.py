@@ -1,6 +1,7 @@
 from google.cloud.sql.connector import Connector
 from google.cloud import storage
 from google.cloud import secretmanager
+from fastapi import UploadFile
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -168,29 +169,28 @@ class Storage:
             print(f"Rename blob\n An error occurred: {error}")
             return False, error
     
-   
-        
-    
-    #// Not finish yet
-    def move_file(self, src_path:str, des_path:str):
-        try:    
-            blob_corpus_src = self.global_corpus.blob(src_path)
-            blob_corpus_des = self.global_corpus.blob(des_path)
-            
-            blob_bucket_src = self.global_bucket.blob(src_path)
-            blob_bucket_des = self.global_bucket.blob(des_path)
-
-            #// Copy file to destination folder
-            blob_corpus_des.upload_from_string(blob_corpus_src.download_as_text())
-            blob_bucket_des.upload_from_string(blob_bucket_src.download_as_text())
-            
-            blob_corpus_src.delete()
-            blob_bucket_src.delete()
-        
+    def upload_file(self, file:UploadFile):
+        try:
+            blob = self.global_bucket.blob(file.filename)
+            blob.upload_from_file(file.file)
             return True
-        except Exception as error:
-            print(f"Move file\nAn error occurred: {error}")
+        except Exception as e:
+            print(str(e))
+            print("Connection file\nFunction: upload file")
             return False
+
+    def upload_file_corpus(self, file:UploadFile):
+        try:
+            blob_corpus = self.global_corpus.blob(file.filename)
+            blob_corpus.upload_from_file(file.file)
+            return True
+        except Exception as e:
+            print(str(e))
+            print("Connection file\nFunction: upload_file_corpus")
+            return False
+    
+    def download_file(file_name:str):
+        pass
     
     def extract_into_txt(self,file_name:str):
         #// Get it as txt file
@@ -210,20 +210,7 @@ class Storage:
         
         blob_cor = self.global_corpus.blob(f"{file_name[:len(file_name)-4]}.txt")
         blob_cor.upload_from_string(downloaded_blob)    
-    
-    #// Automatically add to corpus
-    def upload_text(self, file_name:str, texts:str):
-        try:
-            blob_buc = self.global_bucket.blob(file_name)
-            blob_cor = self.global_corpus.blob(file_name)
-            
-            blob_buc.upload_from_string(texts)
-            blob_cor.upload_from_string(texts)
-
-            return True, "_"
-        except Exception as error:
-            print(f"Upload text\nAn error occurred: {error}")   
-            return False, error     
+      
         
 
 global_db = Database()
