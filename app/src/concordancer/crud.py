@@ -8,7 +8,7 @@ from src.connections import global_st
 from src.concordancer.schemas import requestSchema
 from nltk.tokenize import word_tokenize
 
-MAX_LEN = 100 #Maximum string per len
+MAX_LEN = 50 #Maximum string per len
 
 def check_filename(filenames):
     json_path = get_all_filename()

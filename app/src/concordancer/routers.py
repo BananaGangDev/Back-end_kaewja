@@ -14,8 +14,6 @@ router = APIRouter(
 
 nltk.download('punkt')
 nltk.download('stopwords')
-
-MAX_LEN = 30 #Maximum string per len
         
 @router.get("/get_filename",status_code=200)
 def get_filename():
