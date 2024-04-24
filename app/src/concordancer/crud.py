@@ -38,7 +38,7 @@ def get_path_by_filename(input):
     return {"filename":correct_filenames}
 
 def get_string(filename):
-    blob = global_st.global_corpus.blob("/" + filename)
+    blob = global_st.global_corpus.blob(filename)
     blob = blob.download_as_text()
     return blob
 
