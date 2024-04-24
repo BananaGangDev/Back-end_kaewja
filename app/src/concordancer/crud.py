@@ -8,7 +8,7 @@ from src.connections import global_st
 from src.concordancer.schemas import requestSchema
 from nltk.tokenize import word_tokenize
 
-# PATH = "level999"
+MAX_LEN = 100 #Maximum string per len
 
 def check_filename(filenames):
     json_path = get_all_filename()
@@ -49,4 +49,40 @@ def get_all_words():
         count = len(word_tokenize(essay))
         return count
         
-    
+def get_right_side(words,index):
+    count = 0
+    location = index
+    str_right = ""
+    while (count < MAX_LEN) and (location > 0) :
+        location -= 1
+        word = words[location]
+        len_word = len(words[location])
+        if (count + len_word) > MAX_LEN :
+            break
+        else :
+            str_right = word + " " + str_right
+            count = len(str_right)
+        
+    print(str_right,count)
+    return str_right
+
+def get_left_side(words,index):
+    count = 0
+    location = index
+    str_left = ""
+    # print(len(words),location)
+    while (count < MAX_LEN) and ((len(words)-location) > 1) :
+        location += 1
+        # print(len(words),location)
+        word = words[location]
+        len_word = len(words[location])
+        if (count + len_word) > MAX_LEN :
+            break
+        else :
+            str_left = str_left + " " + word
+            count = len(str_left)
+    print(str_left,count)
+    return str_left
+            
+            
+        
