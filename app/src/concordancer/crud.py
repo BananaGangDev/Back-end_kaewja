@@ -25,8 +25,7 @@ def get_all_filename():
     paths = Storage.get_all_path_files(global_st,in_corpus=True)[1]
     filenames = []
     for path in paths:
-        folder,filename = path.split('/')
-        filenames.append(filename)
+        filenames.append(path)
     
     return {"filename":filenames}
         
