@@ -8,7 +8,7 @@ from src.connections import global_st
 from src.concordancer.schemas import requestSchema
 from nltk.tokenize import word_tokenize
 
-PATH = "level999"
+# PATH = "level999"
 
 def check_filename(filenames):
     json_path = get_all_filename()
@@ -25,9 +25,8 @@ def get_all_filename():
     paths = Storage.get_all_path_files(global_st,in_corpus=True)[1]
     filenames = []
     for path in paths:
-        if PATH in path:
-            folder,filename = path.split('/')
-            filenames.append(filename)
+        folder,filename = path.split('/')
+        filenames.append(filename)
     
     return {"filename":filenames}
         
@@ -40,7 +39,7 @@ def get_path_by_filename(input):
     return {"filename":correct_filenames}
 
 def get_string(filename):
-    blob = global_st.global_corpus.blob(PATH + "/" + filename)
+    blob = global_st.global_corpus.blob("/" + filename)
     blob = blob.download_as_text()
     return blob
 
