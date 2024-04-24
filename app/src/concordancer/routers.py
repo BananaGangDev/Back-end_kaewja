@@ -47,13 +47,13 @@ def get_concor(point_focus:str , filenames:List[str]):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No word in corpus. Please refill a new word.")
         else:
             all_words = crud.get_all_words()
-            percent = focus_count/all_words
+            percent = (focus_count/all_words)*(10**2)
             return {
                 "pointFocus":point_focus,
                 "Data":data,
                 "num_words":focus_count,
-                "permillion": percent*(10**6),
-                "percent": percent
+                "permillion": "{:.2f}".format(round(percent*(10**6),2)),
+                "percent": "{:.2f}".format(round(percent,2))
             }
         
     else : 
