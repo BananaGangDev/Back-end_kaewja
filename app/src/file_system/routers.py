@@ -3,7 +3,8 @@ from fastapi import APIRouter, HTTPException, File, UploadFile
 from src.connections import global_st
 from .exceptions import (validate_folder_name, check_existing)
 
-
+from typing import List
+import os
 router = APIRouter(
     tags=["File system"],
     prefix="/sys"
@@ -19,12 +20,16 @@ async def all_uncleaned_paths(in_corpus:bool=False):
 
 #TODO
 @router.get("/download")
-async def download_file(file_name:str, in_courpus:bool=False):
-    
-    result, is_successful = global_st.download_file(in_corpus=in_courpus, file_name=file_name)
+async def download_file(file_name:str, in_corpus:bool=False):
+    result, is_successful = global_st.download_file(in_corpus=in_corpus, file_name=file_name)
+
     if is_successful:
-        return result
-    elif result == :
+        return result 
+        os.remove(f"file/{file_name}")
+    elif result == "Not found":
+        raise HTTPException(status_code=400, detail=f"Not found {file_name}")
+    else:
+        raise HTTPException(status_code=500, detail=f"Service Unavailable, Google storage has a problem")
         
 
 @router.post("/create-folder")

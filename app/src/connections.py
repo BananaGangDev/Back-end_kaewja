@@ -200,15 +200,13 @@ class Storage:
     def download_file(self,file_name:str, in_corpus:bool=False):
         try:
             if not in_corpus:
-                blob = self.global_corpus.blob(file_name)
+                blob = self.global_bucket.blob(file_name)
                 blob.download_to_filename(f"file/{file_name}")
-                return FileResponse(filename=file_name, path=f"file/{file_name}"), True
+                return FileResponse(filename=file_name, path=f"file\{file_name}"), True
             else:
-                #// txt -> pdf
-                pass
-            
+                blob = self.global_corpus()
         except gc.NotFound as nf:
-            print(str(e))
+            print(str(nf))
             print("Connection\nFunction: download file\nError: Not found file")    
             return "Not found", False
         except Exception as e:
