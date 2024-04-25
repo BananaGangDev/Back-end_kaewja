@@ -18,10 +18,14 @@ async def all_uncleaned_paths(in_corpus:bool=False):
         return {'paths': result}
 
 #TODO
-@router.get("/")
-async def download_file(file_name:str):
-    pass
-
+@router.get("/download")
+async def download_file(file_name:str, in_courpus:bool=False):
+    
+    result, is_successful = global_st.download_file(in_corpus=in_courpus, file_name=file_name)
+    if is_successful:
+        return result
+    elif result == :
+        
 
 @router.post("/create-folder")
 async def sys_create_folder(folder_name:str):
@@ -38,7 +42,7 @@ async def sys_create_folder(folder_name:str):
     
 @router.post("/upload")
 async def sys_upload_file(file:UploadFile):
-    ALLOWED_TYPE = ["application/pdf", "text/plain", "application/msword"]
+    ALLOWED_TYPE = ["application/pdf", "text/plain", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
 
     #// pdf, txt, docx
     if file.content_type in ALLOWED_TYPE:
@@ -51,7 +55,16 @@ async def sys_upload_file(file:UploadFile):
     else:
         raise HTTPException(status_code=400, detail=f"Cannot upload {file.filename}")
 
-
+@router.post("/tokenize")
+async def sys_turn_into_token(file_name:str):
+    result, is_successful = global_st.extract_into_txt(file_name=file_name)
+    if is_successful:
+        return {"detail": result}
+    elif result == "Not found":
+        raise HTTPException(status_code=400, detail=f"Not found {file_name}")
+    else:
+        raise HTTPException(status_code=500, detail=f"Service Unavailable, Storage has a problem")
+  
 @router.delete("/delete-file")
 async def sys_delete_file(file_name:str):
     
@@ -70,7 +83,6 @@ async def sys_delete_file(file_name:str):
     else:
         raise HTTPException(status_code=400, detail=f"{file_name} is not existing")
         
-
 @router.delete("/delete-folder")
 async def sys_delete_folder(folder_name:str):
     
@@ -85,13 +97,13 @@ async def sys_delete_folder(folder_name:str):
     else:
         raise HTTPException(status_code=400, detail=f"{folder_name} is not existing")    
     
-# TODO: PUT -> Turn file(pdf, doc) into txt file
-async def sys_turn_into_token():
-    pass
-
 # TODO: PUT -> safe state file
 @router.put("/save-file")
-async def sys_save_status_file():
+async def sys_save_status_file(file:UploadFile, tagset_id:int):
+    
+    #// Send text to endpoint API (string)
+    #// Save file
+    
     pass
 
 @router.put("/change-blob-name", status_code=200)
@@ -128,7 +140,7 @@ async def sys_rename_folder(old_name:str, new_name:str):
                 is_successful, result = global_st.rename_folder(old_name=old_name, new_name=new_name)
                 
                 if not is_successful:
-                    raise HTTPException(status_code=503, detail=f"Service Unavailable, Google storage has a problem")
+                    raise HTTPException(status_code=503, detail=f"Service Unavailable, Storage has a problem")
                 else:
                     return {"detail":"Rename folder successfully"}
 
