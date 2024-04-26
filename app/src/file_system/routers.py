@@ -24,7 +24,8 @@ async def download_file(file_name:str, in_courpus:bool=False):
     result, is_successful = global_st.download_file(in_corpus=in_courpus, file_name=file_name)
     if is_successful:
         return result
-    elif result == :
+    elif result == 0 :
+        pass
         
 
 @router.post("/create-folder")

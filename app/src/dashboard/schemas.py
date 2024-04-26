@@ -9,3 +9,6 @@ class CreateStat(BaseModel):
     tagset_id:int 
     label_id:int
     count:int
+    class Config:
+        from_attributes=True
+    

@@ -14,3 +14,4 @@ class Dashboard(Base):
     tagset_id = Column(SmallInteger,nullable=False)
     label_id = Column(SmallInteger,nullable=False)
     count = Column(SmallInteger,nullable=False)
+    
