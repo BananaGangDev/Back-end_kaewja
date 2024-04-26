@@ -12,6 +12,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from pypdf import PdfReader
 from docx import Document
+from fpdf import FPDF
 
 class Database: 
     def __init__(self):
@@ -196,26 +197,45 @@ class Storage:
             print("Connection file\nFunction: upload_file_corpus")
             return False
     
-    #TODO
     def download_file(self,file_name:str, in_corpus:bool=False):
         try:
             if not in_corpus:
-                blob = self.global_corpus.blob(file_name)
+                blob = self.global_bucket.blob(file_name)
                 blob.download_to_filename(f"file/{file_name}")
-                return FileResponse(filename=file_name, path=f"file/{file_name}"), True
+                return f"{file_name}", True
             else:
-                #// txt -> pdf
-                pass
-            
+                if file_name[-4:] == ".txt":
+                    blob = self.global_corpus.blob(file_name)
+                    blob.download_to_filename(f"file/{file_name}")
+                    pdf = FPDF()
+                    pdf.add_page()
+                    
+                    file = open(f"file/{file_name}", "r")
+                    for text in file:
+                        if len(text) <= 20:
+                            pdf.set_font("Arial", "B", size=18)
+                            pdf.cell(w=200, h=10, txt=text, ln=1, align = "C")
+                        else:
+                            pdf.set_font("Arial", size=14)
+                            pdf.multi_cell(w=0,h=10, txt=text, align="L")
+                    pdf.output(f"file/{file_name[:-4]}.pdf")
+                    
+                    return f"{file_name[:-4]}.pdf", True                 
+                    
+                else:
+                    return "Wrong file extension (.txt please)", False
+                
+                
+                
         except gc.NotFound as nf:
-            print(str(e))
+            print(str(nf))
             print("Connection\nFunction: download file\nError: Not found file")    
             return "Not found", False
         except Exception as e:
             print(str(e))
             print("Connection\nFunction: download_file")
             return "_", False
-    
+        
     def extract_into_txt(self,file_name:str):
         try:
             blob = self.global_bucket.blob(file_name)
@@ -265,8 +285,47 @@ class Storage:
             print("Connection\nFunction: extract_into_txt")
             return "_", False
       
-    def save_state_file():
-        pass    
-
+    def save_state_file(self, file:UploadFile):
+        try:
+            target = self.global_corpus.blob(file.filename)
+            #// Check file is exist
+            if target.exists():
+                blob = self.global_corpus.blob(file.filename)
+                blob.upload_from_file(file.file)
+                return "_", True
+                
+            else:
+                return "File is not existing", False
+    
+        except Exception as e:
+            print(str(e))
+            print("Connection: Storage\nFunction: save_state_file")
+        
+    def upload_text(self, text:str, file_name:str):
+        try:
+            with open(f"file/{file_name}.txt", "w") as file:
+                count = 0
+                for i in text:
+                    file.write(i)
+                    count += 1
+                    if count == 100:
+                        file.write("\n")
+                        count = 0
+                
+            blob = self.global_bucket.blob(f"{file_name}.txt")
+            blob.upload_from_filename(f"file/{file_name}.txt")
+            blob_cor = self.global_corpus.blob(f"{file_name}.txt")
+            blob_cor.upload_from_filename(f"file/{file_name}.txt")
+            
+            return True
+        
+        except Exception as e:
+            print(str(e))
+            print("Connection: Storage\nFunction: upload_text")
+            return False
+    
+    
+ 
+        
 global_db = Database()
 global_st= Storage() 

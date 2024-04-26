@@ -1,9 +1,13 @@
 from fastapi import APIRouter, HTTPException, File, UploadFile
+from fastapi.responses import FileResponse
 
 from src.connections import global_st
 from .exceptions import (validate_folder_name, check_existing)
 
-
+from starlette.background import BackgroundTasks
+from typing import List
+import os
+import time
 router = APIRouter(
     tags=["File system"],
     prefix="/sys"
@@ -17,16 +21,25 @@ async def all_uncleaned_paths(in_corpus:bool=False):
     else:
         return {'paths': result}
 
-#TODO
+async def clean_up(file_name:str) -> None:    
+        os.remove(f"file/{file_name}")
+
 @router.get("/download")
-async def download_file(file_name:str, in_courpus:bool=False):
-    
-    result, is_successful = global_st.download_file(in_corpus=in_courpus, file_name=file_name)
+async def download_file(background_tasks: BackgroundTasks, file_name:str, in_corpus:bool=False):
+    result, is_successful = global_st.download_file(in_corpus=in_corpus, file_name=file_name)
+
     if is_successful:
-        return result
-    elif result == 0 :
-        pass
-        
+        background_tasks.add_task(clean_up, result)
+        if in_corpus:
+            background_tasks.add_task(clean_up, file_name)
+        return FileResponse(filename=result, path=f"file/{result}")
+
+    elif result == "Not found":
+        background_tasks.add_task(clean_up, result)
+        raise HTTPException(status_code=400, detail=f"Not found {file_name}")
+    else:
+        background_tasks.add_task(clean_up, result)
+        raise HTTPException(status_code=500, detail=f"Service Unavailable, Google storage has a problem")
 
 @router.post("/create-folder")
 async def sys_create_folder(folder_name:str):
@@ -55,6 +68,18 @@ async def sys_upload_file(file:UploadFile):
             raise HTTPException(status_code=500, detail=f"Service Unavailable, Storage has a problem")
     else:
         raise HTTPException(status_code=400, detail=f"Cannot upload {file.filename}")
+
+@router.post("/upload/text")
+async def sys_upload_text(text:str, file_name:str, background_tasks: BackgroundTasks):
+    is_successful = global_st.upload_text(text=text, file_name=file_name)
+    
+    if is_successful:
+        background_tasks.add_task(clean_up, f"{file_name}.txt")
+        return {"detail": "Successfully upload text"}
+    else:
+        if os.path.exists(f"file/{file_name}.txt"):
+            await clean_up(file_name=f"{file_name}.txt")
+        raise HTTPException(status_code=500, detail=f"Service Unavailable, Google storage has a problem")
 
 @router.post("/tokenize")
 async def sys_turn_into_token(file_name:str):
@@ -98,15 +123,20 @@ async def sys_delete_folder(folder_name:str):
     else:
         raise HTTPException(status_code=400, detail=f"{folder_name} is not existing")    
     
-# TODO: PUT -> safe state file
 @router.put("/save-file")
 async def sys_save_status_file(file:UploadFile, tagset_id:int):
     
     #// Send text to endpoint API (string)
     #// Save file
+    result, is_successful = global_st.save_state_file(file=file)
     
-    pass
-
+    if is_successful:
+        return {"detail": f"Successfully update file {file.filename}"}
+    elif result == "File is not existing":
+        raise HTTPException(status_code=400, detail= f"{file.filename} is not existing in corpus")
+    else:
+        raise HTTPException(status_code=500, detail="Service Unavailable, Google storage has a problem")    
+    
 @router.put("/change-blob-name", status_code=200)
 async def sys_rename_file(old_name:str, new_name:str):
     
