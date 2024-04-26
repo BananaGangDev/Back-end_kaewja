@@ -8,7 +8,7 @@ from src.tagset import crud as tagset_crud
 from src.dashboard import crud as dashboard_crud
 from typing import Annotated
 from src.file_system.routers import all_uncleaned_paths
-from bigtree import Node,dataframe_to_tree
+
 import pandas as pd
 
 
