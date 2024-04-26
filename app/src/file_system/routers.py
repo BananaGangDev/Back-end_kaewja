@@ -5,9 +5,10 @@ from src.connections import global_st
 from .exceptions import (validate_folder_name, check_existing)
 
 from starlette.background import BackgroundTasks
-from typing import List
 import os
-import time
+import requests
+
+
 router = APIRouter(
     tags=["File system"],
     prefix="/sys"
@@ -122,11 +123,20 @@ async def sys_delete_folder(folder_name:str):
             return {"detail": f"Delete folder {folder_name} successfully"}
     else:
         raise HTTPException(status_code=400, detail=f"{folder_name} is not existing")    
+
     
 @router.put("/save-file")
 async def sys_save_status_file(file:UploadFile, tagset_id:int):
     
+    content = await file.read()
     #// Send text to endpoint API (string)
+    params = {
+        "string": content.decode(),
+        "tagset_id":tagset_id,
+        "filename": file.filename 
+    }
+    response = requests.post(url="http://127.0.0.1:8000/dashboard/create_stat", params=params)
+    
     #// Save file
     result, is_successful = global_st.save_state_file(file=file)
     
