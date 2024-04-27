@@ -58,4 +58,3 @@ def get_concor(point_focus:str , filenames:List[str]):
         
     else : 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No filename in our bucket. Please refill a new filename.")
-                
