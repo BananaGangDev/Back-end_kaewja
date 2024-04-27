@@ -1,14 +1,18 @@
 from google.cloud.sql.connector import Connector
 from google.cloud import storage
 from google.cloud import secretmanager
-from fastapi import UploadFile
+from fastapi import UploadFile, File
+from fastapi.responses import FileResponse
+import google.cloud.exceptions as gc
+import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from io import StringIO
-
+from pypdf import PdfReader
+from docx import Document
+from fpdf import FPDF
 
 class Database: 
     def __init__(self):
@@ -169,49 +173,159 @@ class Storage:
             print(f"Rename blob\n An error occurred: {error}")
             return False, error
     
-    def upload_file(self, file:UploadFile):
+    def upload_file(self, file:UploadFile, in_corpus:bool=False):
         try:
             blob = self.global_bucket.blob(file.filename)
             blob.upload_from_file(file.file)
+            if in_corpus:
+                blob = self.global_corpus.blob(file.filename)
+                blob.upload_from_file(file.file)
+            
             return True
         except Exception as e:
             print(str(e))
             print("Connection file\nFunction: upload file")
             return False
 
-    def upload_file_corpus(self, file:UploadFile):
+    def upload_file_corpus(self, file:str):
         try:
-            blob_corpus = self.global_corpus.blob(file.filename)
-            blob_corpus.upload_from_file(file.file)
+            blob_corpus = self.global_corpus.blob(file.split("/")[-1])
+            blob_corpus.upload_from_filename(file)
             return True
         except Exception as e:
             print(str(e))
             print("Connection file\nFunction: upload_file_corpus")
             return False
     
-    def download_file(file_name:str):
-        pass
-    
+    def download_file(self,file_name:str, in_corpus:bool=False):
+        try:
+            if not in_corpus:
+                blob = self.global_bucket.blob(file_name)
+                blob.download_to_filename(f"file/{file_name}")
+                return f"{file_name}", True
+            else:
+                if file_name[-4:] == ".txt":
+                    blob = self.global_corpus.blob(file_name)
+                    blob.download_to_filename(f"file/{file_name}")
+                    pdf = FPDF()
+                    pdf.add_page()
+                    
+                    file = open(f"file/{file_name}", "r")
+                    for text in file:
+                        if len(text) <= 20:
+                            pdf.set_font("Arial", "B", size=18)
+                            pdf.cell(w=200, h=10, txt=text, ln=1, align = "C")
+                        else:
+                            pdf.set_font("Arial", size=14)
+                            pdf.multi_cell(w=0,h=10, txt=text, align="L")
+                    pdf.output(f"file/{file_name[:-4]}.pdf")
+                    
+                    return f"{file_name[:-4]}.pdf", True                 
+                    
+                else:
+                    return "Wrong file extension (.txt please)", False
+                
+                
+                
+        except gc.NotFound as nf:
+            print(str(nf))
+            print("Connection\nFunction: download file\nError: Not found file")    
+            return "Not found", False
+        except Exception as e:
+            print(str(e))
+            print("Connection\nFunction: download_file")
+            return "_", False
+        
     def extract_into_txt(self,file_name:str):
-        #// Get it as txt file
-        blob_buc = self.global_bucket.blob(file_name)
-        downloaded_blob = blob_buc.download_as_text().decode("utf-8")
-        
-        
-        if file_name.count("/") != 0:
-            splitted_file_name = file_name.split("/")
-            name = splitted_file_name[-1]
+        try:
+            blob = self.global_bucket.blob(file_name)
+            blob.download_to_filename(f"file/{file_name}")
             
-        elif file_name.count("/") == 0:
-            name = file_name
+            if file_name[-4:] == ".pdf":
+                reader = PdfReader(f"file\{file_name}")
+                with open(f"file/{file_name[:-4]}.txt","w", encoding="utf-8") as file:
+                    for i in range(len(reader.pages)):
+                        page = reader.pages[i]
+                        file.write(page.extract_text() + '\n')        
+                
+                self.upload_file_corpus(f"file/{file_name[:-4]}.txt")
+                os.remove(f"file/{file_name}")
+                os.remove(f"file/{file_name[:-4]}.txt")
+                return "Tokenize pdf file successfully", True
+            
+            elif file_name[-4:] == ".txt":
+                self.upload_file_corpus(f"file/{file_name}")    
+                os.remove(f"file/{file_name[:-4]}.txt")
+                
+                return "Tokenize txt file successfully", True
+            
+            elif file_name[-4:] == ".doc" or file_name[-5:] == ".docx":
+                name = file_name.split(".")[0]
+                doc = Document(f"file/{file_name}")
+                with open(f"file/{name}.docx", "w", encoding="utf-8") as file:
+                    for i in doc.paragraphs:
+                        print(i.text)
+                        file.write(i.text)
+                        
+            
+            else:
+                return "Wrong file extension", False
+            
+        except UnicodeDecodeError as decode_error:
+            print(str(decode_error))
+            print("Connection\nFunction: extract_into_txt\nError: Decode error")
+            
+        except gc.NotFound as nf:
+            print(str(nf))
+            print("Connection\nFunction: extract_into_txt\nError: Not found file")
+            return "Not found", False
         
-        #// Get folder name
-        folders = "/".join(splitted_file_name[:2])
-        
-        blob_cor = self.global_corpus.blob(f"{file_name[:len(file_name)-4]}.txt")
-        blob_cor.upload_from_string(downloaded_blob)    
+        except Exception as e:
+            print(e)
+            print("Connection\nFunction: extract_into_txt")
+            return "_", False
       
+    def save_state_file(self, file:UploadFile):
+        try:
+            target = self.global_corpus.blob(file.filename)
+            #// Check file is exist
+            if target.exists():
+                blob = self.global_corpus.blob(file.filename)
+                blob.upload_from_file(file.file)
+                return "_", True
+                
+            else:
+                return "File is not existing", False
+    
+        except Exception as e:
+            print(str(e))
+            print("Connection: Storage\nFunction: save_state_file")
         
-
+    def upload_text(self, text:str, file_name:str):
+        try:
+            with open(f"file/{file_name}.txt", "w") as file:
+                count = 0
+                for i in text:
+                    file.write(i)
+                    count += 1
+                    if count == 100:
+                        file.write("\n")
+                        count = 0
+                
+            blob = self.global_bucket.blob(f"{file_name}.txt")
+            blob.upload_from_filename(f"file/{file_name}.txt")
+            blob_cor = self.global_corpus.blob(f"{file_name}.txt")
+            blob_cor.upload_from_filename(f"file/{file_name}.txt")
+            
+            return True
+        
+        except Exception as e:
+            print(str(e))
+            print("Connection: Storage\nFunction: upload_text")
+            return False
+    
+    
+ 
+        
 global_db = Database()
 global_st= Storage() 

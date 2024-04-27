@@ -68,7 +68,7 @@ def update_user(db:Session, user_info: UserSchema):
     _user_info.firstname = user_info.firstname
     _user_info.lastname = user_info.lastname
     _user_info.role = user_info.role
-    _user_info.enail = user_info.email
+    _user_info.email = user_info.email
     _user_info.start_register = user_info.start_register
     _user_info.end_register = user_info.end_register
     

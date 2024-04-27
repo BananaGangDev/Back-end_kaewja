@@ -9,6 +9,7 @@ from src.concordancer.routers import router as concor_routes
 from src.error_tagger.routers import router as errortag_routes
 from src.file_system.routers import router as file_routes
 from src.tagset.routers import router as tagset_routes
+from src.dashboard.routers import router as dashboard_routes
 
 # Data
 from src.connections import global_db
@@ -39,6 +40,7 @@ app.include_router(concor_routes)
 app.include_router(errortag_routes)
 app.include_router(file_routes)
 app.include_router(tagset_routes)
+app.include_router(dashboard_routes)
 
 
 
