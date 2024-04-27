@@ -30,34 +30,36 @@ db_dependency = Annotated[Session, Depends(get_db)]
 def create_stat(string,tagset_id,filename,db:db_dependency):
         # label = get_label_in_tagset(tagset=int(tagset_id),db=db)[0]
         tags = re.findall(r'<[^<>]+>',string)
-        count_tags = len(tags)
-        # print(count_tags)
-        stat_dicts = {}
-        for i in range(0,len(tags)-1,2):
-            if (tags[i][0] == "<") and (tags[i][-1] == ">"):
-                front_tag = tags[i].split()[0][1:3]
-                back_tag = tags[i+1]
-                print(front_tag,back_tag)
-                label = dashboard_crud.check_label_by_label_name(db=db,label_name=front_tag,tagset_id=tagset_id)
-                if (front_tag in back_tag) and label:
-                    # print(label)
-                    if front_tag not in stat_dicts.keys():
-                        stat_dicts[front_tag] = {"count":1,"label_id":int(label.label_id)}
-                    else : 
-                        stat_dicts[front_tag]["count"] += 1
-        count = len(stat_dicts)
-        for key,value in stat_dicts.items():
-            print(key,value)
-            # result = check_label_by_file(db=db,filename=filename,label_id=dict["label_id"])
-            if dashboard_crud.check_label_by_file(db=db,filename=filename,label_id=value["label_id"]):
-                data = dashboard_crud.update_data(db=db,filename=filename,tagset_id=int(tagset_id),label_id=value['label_id'],new_count=value['count'])
-                count -= 1
-            else : 
-                data = dashboard_crud.add_data(db=db,filename=filename,tagset_id=tagset_id,label_id=value['label_id'],count=value['count'])
-                count -= 1
-            print(data)
-        
-        return Response(content="update dashboard successfully",status_code=status.HTTP_201_CREATED)
+        if tags:
+            count_tags = len(tags)
+            # print(count_tags)
+            stat_dicts = {}
+            for i in range(0,len(tags)-1,2):
+                if (tags[i][0] == "<") and (tags[i][-1] == ">"):
+                    front_tag = tags[i].split()[0][1:3]
+                    back_tag = tags[i+1]
+                    # print(front_tag,back_tag)
+                    label = dashboard_crud.check_label_by_label_name(db=db,label_name=front_tag,tagset_id=tagset_id)
+                    if (front_tag in back_tag) and label:
+                        # print(label)
+                        if front_tag not in stat_dicts.keys():
+                            stat_dicts[front_tag] = {"count":1,"label_id":int(label.label_id)}
+                        else : 
+                            stat_dicts[front_tag]["count"] += 1
+                            
+            count = len(stat_dicts)
+            for key,value in stat_dicts.items():
+                print(key,value)
+                # result = check_label_by_file(db=db,filename=filename,label_id=dict["label_id"])
+                if dashboard_crud.check_label_by_file(db=db,filename=filename,label_id=value["label_id"]):
+                    data = dashboard_crud.update_data(db=db,filename=filename,tagset_id=int(tagset_id),label_id=value['label_id'],new_count=value['count'])
+                    count -= 1
+                else : 
+                    data = dashboard_crud.add_data(db=db,filename=filename,tagset_id=tagset_id,label_id=value['label_id'],count=value['count'])
+                    count -= 1
+            return Response(content="update dashboard successfully",status_code=status.HTTP_201_CREATED)
+        else:
+            return Response(content="No tag in this file",status_code=status.HTTP_204_NO_CONTENT)
         
 @router.get("/get_stat",status_code=200)
 def get_stat(tagset_id,db:db_dependency):
