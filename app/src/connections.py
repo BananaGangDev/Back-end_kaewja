@@ -285,13 +285,13 @@ class Storage:
             print("Connection\nFunction: extract_into_txt")
             return "_", False
       
-    def save_state_file(self, file:UploadFile):
+    def save_state_file(self, file_name:str):
         try:
-            target = self.global_corpus.blob(file.filename)
+            target = self.global_corpus.blob(file_name)
             #// Check file is exist
             if target.exists():
-                blob = self.global_corpus.blob(file.filename)
-                blob.upload_from_file(file.file)
+                blob = self.global_corpus.blob(file_name)
+                blob.upload_from_filename(f"file/{file_name}")
                 return "_", True
                 
             else:
@@ -300,6 +300,7 @@ class Storage:
         except Exception as e:
             print(str(e))
             print("Connection: Storage\nFunction: save_state_file")
+            return "_", False
         
     def upload_text(self, text:str, file_name:str):
         try:

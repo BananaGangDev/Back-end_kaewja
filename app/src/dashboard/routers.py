@@ -26,7 +26,6 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
-@router.post("/create_stat",status_code=201)
 def create_stat(string,tagset_id,filename,db:db_dependency):
         # label = get_label_in_tagset(tagset=int(tagset_id),db=db)[0]
         tags = re.findall(r'<[^<>]+>',string)
