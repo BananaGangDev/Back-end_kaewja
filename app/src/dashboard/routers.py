@@ -67,7 +67,7 @@ def get_stat(tagset_id,db:db_dependency):
     total_document = len(file)
     checked_document = len(dashboard_crud.get_document_by_tagset_id(db=db,tagset_id=tagset_id))
     roots = dashboard_crud.get_label_by_root(db=db,tagset_id=tagset_id,label_level=0,label_parent="ROOT")
-    if (not is_successful) or (checked_document not in [[],False,None]) or (roots not in [[],None,False]):
+    if (checked_document in [[],False,None]) or (roots in [[],None,False]):
         return Response(content="No data",status_code=status.HTTP_404_NOT_FOUND)
     
     path = []
