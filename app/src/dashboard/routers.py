@@ -60,13 +60,17 @@ def create_stat(string,tagset_id,filename,db:db_dependency):
             return Response(content="update dashboard successfully",status_code=status.HTTP_201_CREATED)
         else:
             return Response(content="No tag in this file",status_code=status.HTTP_204_NO_CONTENT)
-        
+
+#Get Summary Stat        
 @router.get("/get_stat",status_code=200)
 def get_stat(tagset_id,db:db_dependency):
     is_successful,file = global_st.get_all_path_files(in_corpus=False)
     total_document = len(file)
     checked_document = len(dashboard_crud.get_document_by_tagset_id(db=db,tagset_id=tagset_id))
     roots = dashboard_crud.get_label_by_root(db=db,tagset_id=tagset_id,label_level=0,label_parent="ROOT")
+    if (not is_successful) or (checked_document not in [[],False,None]) or (roots not in [[],None,False]):
+        return Response(content="No data",status_code=status.HTTP_404_NOT_FOUND)
+    
     path = []
     for root in roots:
         string_root = root.label_name
@@ -160,6 +164,7 @@ def get_stat(tagset_id,db:db_dependency):
     }
     return output
 
+#Get Stat Card In DB
 @router.get("/get_stat_from_db",status_code=200)
 def get_stat_by_id(tagset_id,db:db_dependency):
     return dashboard_crud.get_stat_by_id(db=db,tagset_id=tagset_id)
