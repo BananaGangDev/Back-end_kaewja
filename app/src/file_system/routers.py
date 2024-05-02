@@ -167,11 +167,11 @@ async def sys_save_status_file(background_tasks: BackgroundTasks,file:UploadFile
         if is_successful:
             background_tasks.add_task(clean_up,file_name)
             resp = create_stat(string=data, tagset_id=tagset_id, filename=file_name, db=db)
-            if resp.content == "update dashboard successfully":
+            if resp == "update dashboard successfully":
                 return {"detail": f"Successfully update file {file.filename}"}
             else : 
                 return resp
-        elif result == "File is not existing":
+        elif result == "File is not existing": #spy edit
             background_tasks.add_task(clean_up,file_name)
             raise HTTPException(status_code=400, detail= f"{file.filename} is not existing in corpus")
         else:
