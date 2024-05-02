@@ -8,6 +8,8 @@ from starlette.background import BackgroundTasks
 from typing import List
 import os
 import time
+
+from src.concordancer.crud import get_string
 router = APIRouter(
     tags=["File system"],
     prefix="/sys"
@@ -40,6 +42,10 @@ async def download_file(background_tasks: BackgroundTasks, file_name:str, in_cor
     else:
         background_tasks.add_task(clean_up, result)
         raise HTTPException(status_code=500, detail=f"Service Unavailable, Google storage has a problem")
+
+@router.get("/get_string_in_file")
+async def get_string_in_file(file_name:str):
+    return get_string(filename=file_name)
 
 @router.post("/create-folder")
 async def sys_create_folder(folder_name:str):

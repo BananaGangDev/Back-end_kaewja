@@ -170,3 +170,80 @@ def get_stat(tagset_id,db:db_dependency):
 @router.get("/get_stat_from_db",status_code=200)
 def get_stat_by_id(tagset_id,db:db_dependency):
     return dashboard_crud.get_stat_by_id(db=db,tagset_id=tagset_id)
+
+# @router.get("/get_stat_version2",status_code=200)
+# def get_stat_version2(tagset_id,db:db_dependency):
+#     is_successful,file = global_st.get_all_path_files(in_corpus=False)
+#     total_document = len(file)
+#     checked_document = dashboard_crud.get_stat_by_id(db=db,tagset_id=tagset_id)
+#     if (checked_document in [[],False,None]) or (not is_successful):
+#         return Response(content="No data",status_code=status.HTTP_204_NO_CONTENT)
+    
+#     total_error = 0
+#     data = []
+#     for i in checked_document:
+#         total_error += int(i.count)
+        
+#     for stat in checked_document:
+#         my_label = dashboard_crud.get_label_by_label_id(db=db,label_id=stat.label_id)
+#         # print(my_label)
+#         count = stat.count
+#         child_data = {
+#                     "child_name" : my_label[0].label_name,
+#                     "child_description" : my_label[0].label_description,
+#                     "count" : count,
+#                     "percent" : str((count/total_error)*100)
+#                 }
+#         if my_label[0].label_parent == "ROOT":
+#             for i in range(my_label[0].label_level-1):
+#                 my_label = dashboard_crud.get_label_by_label_name(db=db,label_name=my_label[0].label_parent)
+#             # parent = my_label.label_parent
+        
+#         parent = my_label[0].label_parent
+#         # if len(data) != 0:
+#         #     for i in data:
+#         #         print(data)
+#         #         if i['root_name'] != parent:
+#         #             data.append({ 
+#         #             "root_name" : parent,
+#         #             "data" : [child_data]})
+#         #         else : 
+#         #             print(type(i['data']))
+#         #             i['data'].append(child_data)
+#         # else : 
+#         #     data.append({ 
+#         #             "root_name" : parent,
+#         #             "data" : child_data})
+                
+#         data.append({ 
+#                 "root_name" : parent,
+#                 "child_data" : child_data})
+        
+#     roots = []
+#     child_name = []
+#     result = []
+#     for i in data:
+#         if (len(roots) == 0) or (i['root_name'] not in roots):
+#             result.append(i)
+#             roots.append(i['root_name'])
+#             child_name.append(i['child_data'][0]['child_name'])
+#         elif i['root_name'] in roots:
+#             if isinstance(i['child_data'],dict):
+#                 i['child_data'] =  
+            
+            
+#     card_data = {
+#         "total" : str(total_document),
+#         "check" : str(len(checked_document)),
+#         "error" : str(total_error)
+#     }
+    
+#     return {"card_data":card_data,
+#             "data":result
+#     }   
+        
+    
+    
+        
+            
+        
