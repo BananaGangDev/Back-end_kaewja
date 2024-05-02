@@ -40,6 +40,7 @@ def edit_tagset(req: TagsetSchemaPut,db:Session):
         return False
     else:
         tg.tagset_name = req.tagset_name
+        db.flush()
         tg.tagset_description = req.description
         db.commit()
         db.refresh(tg)
