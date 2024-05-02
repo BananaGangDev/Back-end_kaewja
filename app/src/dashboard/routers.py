@@ -53,7 +53,7 @@ def create_stat(string,tagset_id,filename,db:db_dependency):
                 print(key,value)
                 # result = check_label_by_file(db=db,filename=filename,label_id=dict["label_id"])
                 if dashboard_crud.check_label_by_file(db=db,filename=filename,label_id=value["label_id"]):
-                    data = dashboard_crud.update_data(db=db,filename=filename,tagset_id=int(tagset_id),label_id=value['label_id'],new_count=value['count'])
+                    data = dashboard_crud.update_data(db=db,filename=filename,label_id=value['label_id'],new_count=value['count'])
                     count -= 1
                 else : 
                     data = dashboard_crud.add_data(db=db,filename=filename,tagset_id=tagset_id,label_id=value['label_id'],count=value['count'])

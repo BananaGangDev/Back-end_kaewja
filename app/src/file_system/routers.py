@@ -9,10 +9,8 @@ from .exceptions import (validate_folder_name, check_existing)
 from starlette.background import BackgroundTasks
 import os
 from src.dashboard.routers import create_stat
-
-
-
 from src.concordancer.crud import get_string
+
 router = APIRouter(
     tags=["File system"],
     prefix="/sys"
@@ -149,36 +147,19 @@ async def sys_delete_folder(folder_name:str):
 
     
 @router.put("/save-file")
-async def sys_save_status_file(background_tasks: BackgroundTasks, file:UploadFile, tagset_id:int, db:db_dependency):
+async def sys_save_status_file(file:UploadFile, tagset_id:int):
     
-    if file.content_type == "text/plain":    
-        file_name = file.filename
-        file_path = os.path.join("file", file_name)
-        data = ""
-        with open(file_path, "wb") as f:
-            f.write(file.file.read())
-        
-        with open(file_path,"r") as f:
-            data += f.read()
+    #// Send text to endpoint API (string)
+    #// Save file
+    result, is_successful = global_st.save_state_file(file=file)
     
-        #// record stats
-        create_stat(string=data, tagset_id=tagset_id, filename=file_name, db=db)
-    
-        #// Save file
-        result, is_successful = global_st.save_state_file(file_name=file_name)
-        
-        if is_successful:
-            background_tasks.add_task(clean_up,file_name)
-            return {"detail": f"Successfully update file {file.filename}"}
-        elif result == "File is not existing":
-            background_tasks.add_task(clean_up,file_name)
-            raise HTTPException(status_code=400, detail= f"{file.filename} is not existing in corpus")
-        else:
-            background_tasks.add_task(clean_up,file_name)
-            raise HTTPException(status_code=500, detail="Service Unavailable, Google storage has a problem")    
+    if is_successful:
+        return {"detail": f"Successfully update file {file.filename}"}
+    elif result == "File is not existing":
+        raise HTTPException(status_code=400, detail= f"{file.filename} is not existing in corpus")
     else:
-        raise HTTPException(status_code=400, detail="Wrong file extension")
-
+        raise HTTPException(status_code=500, detail="Service Unavailable, Google storage has a problem")    
+    
 @router.put("/change-blob-name", status_code=200)
 async def sys_rename_file(old_name:str, new_name:str):
     
