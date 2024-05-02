@@ -48,6 +48,8 @@ async def log_in(login_item:schemas.requestdetails ,db:Session=Depends(get_db)):
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This ID doesn't have account. Please sign up.")
     
+    print(user.password)
+    print(crud.get_password_hash(login_item.password))
     if not crud.verify_password(plain_password=login_item.password,hashed_password=user.password):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password is wrong.")
     
@@ -92,7 +94,7 @@ def get_users_log_in(db: Session = Depends(get_db)):
     return db.query(TokenTable).filter_by(status=True).all()
 
 @router.post('/change-password')
-def change_password(request: schemas.changepassword, db: Session = Depends(get_db)):
+async def change_password(request: schemas.changepassword, db: Session = Depends(get_db)):
     user = db.query(Users).filter(Users.user_id == request.user_id).first()
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
@@ -115,8 +117,10 @@ def forget_password(username,firstname,lastname,new_password,db:Session = Depend
     if user.lastname != lastname:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Lastname is incorrect")
     else : 
+        print(user.password)
         encrypted_password = crud.get_password_hash(new_password)
         user.password = encrypted_password
+        print(user.password)
         crud.update_user(db=db,user_info=user)
         return {"message": "Password changed successfully"}
             
