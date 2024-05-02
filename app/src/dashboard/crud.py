@@ -41,7 +41,7 @@ def get_stat_by_id(db:Session,tagset_id):
     
 def get_document_by_tagset_id(db:Session,tagset_id):
     # return db.query(Dashboard.filename,func.count(Dashboard.filename)).group_by(Dashboard.filename).all()
-    data = db.query(Dashboard.filename,func.count(Dashboard.filename)).group_by(Dashboard.filename).all()
+    data = db.query(Dashboard).filter(Dashboard.tagset_id==str(tagset_id)).all()
     if data in [None,[]]:
         return False
     else :

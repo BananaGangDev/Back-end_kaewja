@@ -1,6 +1,0 @@
-list = ["a","b","c","d","e","f","g"]
-index = 5
-for i in range(2-index):
-    print(list[i])
-
-print("eiei")
