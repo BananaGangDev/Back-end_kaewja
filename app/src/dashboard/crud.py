@@ -20,6 +20,7 @@ def get_label_by_label_id(db:Session,label_id):
         return False
     else:
         result_list = [LabelSchema.from_orm(row) for row in result]
+        print(result_list)
         return result_list
 
 def get_label_by_label_name(db:Session,label_name):
@@ -82,6 +83,6 @@ def get_label_by_root(db:Session,tagset_id,label_parent,label_level):
         return data
 
 def get_label_description(db:Session,label_name):
-    _label = get_label_by_label_name(db=db,label_name=label_name)
+    _label = get_label_by_label_name(db=db,label_name=label_name)[0]
     _label_info = db.query(LabelInfo).filter(LabelInfo.label_info_id==_label.label_id).first()
     return _label_info.label_description

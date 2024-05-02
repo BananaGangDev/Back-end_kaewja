@@ -99,7 +99,7 @@ def get_stat(tagset_id,db:db_dependency):
                             
     df_labels = pd.DataFrame(path,columns=["PATH","Count"])
     for stat in checked_document:
-        label = dashboard_crud.get_label_by_label_id(db=db,label_id=stat.label_id)
+        label = dashboard_crud.get_label_by_label_id(db=db,label_id=stat.label_id)[0]
         label_name = label.label_name
         count = stat.count
         # print(label_name)
