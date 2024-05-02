@@ -61,7 +61,9 @@ async def download_file(background_tasks: BackgroundTasks, file_name:str, in_cor
 
 @router.get("/get_string_in_file")
 async def get_string_in_file(file_name:str):
-    return get_string(filename=file_name)
+    result = get_string(filename=file_name)
+    cleaned_result = result.replace("\r\n\r\n",". ").replace("\t", " ").replace("\r", " ").replace("\n", " ")
+    return cleaned_result
 
 @router.post("/create-folder")
 async def sys_create_folder(folder_name:str):
