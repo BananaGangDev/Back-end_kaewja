@@ -48,7 +48,7 @@ async def log_in(login_item:schemas.requestdetails ,db:Session=Depends(get_db)):
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This ID doesn't have account. Please sign up.")
     
-    if not crud.verify_password(login_item.password,crud.get_password_hash(login_item.password)):
+    if not crud.verify_password(plain_password=login_item.password,hashed_password=user.password):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password is wrong.")
     
     access=crud.create_access_token(user.username,expires_delta=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -78,6 +78,15 @@ async def register_user(user: schemas.CreateNewUser,db: Session=Depends(get_db))
     # db.refresh(new_user)
     return {"message":"user created successfully"}
 
+# @router.get('/get_hashed_password')
+# def get_hashed_password(user:str,db:Session=Depends(get_db)):
+#     user = crud.get_user_by_username(db=db,username=user)
+#     return crud.get_password_hash(user.password)
+
+@router.get('/get_all_users')
+def get_all_users(db:Session=Depends(get_db)):
+    return crud.get_users(db=db)
+    
 @router.get('/get_available_token_user')
 def get_users_log_in(db: Session = Depends(get_db)):
     return db.query(TokenTable).filter_by(status=True).all()
