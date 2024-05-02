@@ -261,11 +261,15 @@ class Storage:
             
             elif file_name[-4:] == ".doc" or file_name[-5:] == ".docx":
                 name = file_name.split(".")[0]
-                doc = Document(f"file/{file_name}")
+                ex = file_name.split(".")[1]
+                doc = Document(f"file/{file_name}") 
                 with open(f"file/{name}.docx", "w", encoding="utf-8") as file:
                     for i in doc.paragraphs:
                         print(i.text)
                         file.write(i.text)
+                        
+                self.upload_file_corpus(f"file/{name}.txt") 
+                return f"Tokenize {ex} file successfully", True  
                         
             
             else:
