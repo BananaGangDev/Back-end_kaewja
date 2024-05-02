@@ -10,6 +10,8 @@ from typing import Annotated
 # from src.file_system.routers import all_uncleaned_paths
 # from bigtree import Node,dataframe_to_tree
 import pandas as pd
+import cProfile
+import pstats
 
 
 router = APIRouter(
@@ -65,10 +67,12 @@ def create_stat(string,tagset_id,filename,db:db_dependency):
 def get_stat(tagset_id,db:db_dependency):
     is_successful,file = global_st.get_all_path_files(in_corpus=False)
     total_document = len(file)
-    checked_document = len(dashboard_crud.get_document_by_tagset_id(db=db,tagset_id=tagset_id))
+    checked_document = dashboard_crud.get_stat_by_id(db=db,tagset_id=tagset_id)
     roots = dashboard_crud.get_label_by_root(db=db,tagset_id=tagset_id,label_level=0,label_parent="ROOT")
+    print(checked_document)
+    print(roots)
     if (checked_document in [[],False,None]) or (roots in [[],None,False]):
-        return Response(content="No data",status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     
     path = []
     for root in roots:
@@ -87,7 +91,6 @@ def get_stat(tagset_id,db:db_dependency):
                                 string_level3 = string_level2 + "/" + level3.label_name
                                 path.append([string_level3,0])
                         else:
-                            
                             path.append([string_level2,0])
                 else:
                     path.append([string_level1,0])
@@ -95,8 +98,7 @@ def get_stat(tagset_id,db:db_dependency):
             path.append([string_root,0])
                             
     df_labels = pd.DataFrame(path,columns=["PATH","Count"])
-    all_stat = dashboard_crud.get_stat_by_id(db=db,tagset_id=tagset_id)
-    for stat in all_stat:
+    for stat in checked_document:
         label = dashboard_crud.get_label_by_label_id(db=db,label_id=stat.label_id)
         label_name = label.label_name
         count = stat.count
@@ -154,7 +156,7 @@ def get_stat(tagset_id,db:db_dependency):
     
     card_data = {
         "total" : str(total_document),
-        "check" : str(checked_document),
+        "check" : str(len(checked_document)),
         "error" : str(all_count)
     }
     
