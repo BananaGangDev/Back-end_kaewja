@@ -55,16 +55,23 @@ def create_refresh_token(subject: Union[str, Any], expires_delta: int = None) ->
     return encoded_jwt
 
 def verify_password(plain_password,hashed_password):
-    return password_context.verify(plain_password,hashed_password)
+    verify = password_context.verify(plain_password,hashed_password)
+    print(verify)
+    print(plain_password)
+    print(hashed_password)
+    return verify
 
 def get_password_hash(password):
-    return password_context.hash(password)
+    hashed_password = password_context.hash(password)
+    # print(password)
+    # print(hashed_password)
+    return hashed_password
     
 def update_user(db:Session, user_info: UserSchema):
     _user_info = db.query(Users).filter(Users.user_id == user_info.user_id).first()
     _user_info.user_id = user_info.user_id
     _user_info.username = user_info.username
-    _user_info.password = get_password_hash(user_info.password)
+    _user_info.password = user_info.password
     _user_info.firstname = user_info.firstname
     _user_info.lastname = user_info.lastname
     _user_info.role = user_info.role

@@ -9,7 +9,7 @@ from .exceptions import (validate_folder_name, check_existing)
 from starlette.background import BackgroundTasks
 import os
 from src.dashboard.routers import create_stat
-
+from src.concordancer.crud import get_string
 
 router = APIRouter(
     tags=["File system"],
@@ -23,7 +23,13 @@ def get_db():
     finally:
         db.close()
 
+def check_main_folder(folder_name:str):
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+        
 db_dependency = Annotated[Session, Depends(get_db)]
+check_main_folder("file")
+
 
 @router.get('/paths')
 async def all_uncleaned_paths(in_corpus:bool=False):
@@ -52,6 +58,12 @@ async def download_file(background_tasks: BackgroundTasks, file_name:str, in_cor
     else:
         background_tasks.add_task(clean_up, result)
         raise HTTPException(status_code=500, detail=f"Service Unavailable, Google storage has a problem")
+
+@router.get("/get_string_in_file")
+async def get_string_in_file(file_name:str):
+    result = get_string(filename=file_name)
+    cleaned_result = result.replace("\r\n\r\n",". ").replace("\t", " ").replace("\r", " ").replace("\n", " ")
+    return cleaned_result
 
 @router.post("/create-folder")
 async def sys_create_folder(folder_name:str):
@@ -137,36 +149,38 @@ async def sys_delete_folder(folder_name:str):
 
     
 @router.put("/save-file")
-async def sys_save_status_file(background_tasks: BackgroundTasks, file:UploadFile, tagset_id:int, db:db_dependency):
+async def sys_save_status_file(background_tasks: BackgroundTasks,file:UploadFile, tagset_id:int,db:db_dependency):
     
-    if file.content_type == "text/plain":    
+    if file.content_type == "text/plain":
         file_name = file.filename
         file_path = os.path.join("file", file_name)
         data = ""
         with open(file_path, "wb") as f:
             f.write(file.file.read())
-        
+
         with open(file_path,"r") as f:
             data += f.read()
-    
-        #// record stats
-        create_stat(string=data, tagset_id=tagset_id, filename=file_name, db=db)
-    
-        #// Save file
+    #// Send text to endpoint API (string)
+    #// Save file
         result, is_successful = global_st.save_state_file(file_name=file_name)
-        
+    
         if is_successful:
             background_tasks.add_task(clean_up,file_name)
-            return {"detail": f"Successfully update file {file.filename}"}
-        elif result == "File is not existing":
+            resp = create_stat(string=data, tagset_id=tagset_id, filename=file_name, db=db)
+            if resp == "update dashboard successfully":
+                return {"detail": f"Successfully update file {file.filename}"}
+            else : 
+                return resp
+        elif result == "File is not existing": #spy edit
             background_tasks.add_task(clean_up,file_name)
             raise HTTPException(status_code=400, detail= f"{file.filename} is not existing in corpus")
         else:
             background_tasks.add_task(clean_up,file_name)
-            raise HTTPException(status_code=500, detail="Service Unavailable, Google storage has a problem")    
+            raise HTTPException(status_code=500, detail="Service Unavailable, Google storage has a problem")
     else:
         raise HTTPException(status_code=400, detail="Wrong file extension")
-
+    
+    
 @router.put("/change-blob-name", status_code=200)
 async def sys_rename_file(old_name:str, new_name:str):
     
