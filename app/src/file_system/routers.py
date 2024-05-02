@@ -23,7 +23,13 @@ def get_db():
     finally:
         db.close()
 
+def check_main_folder(folder_name:str):
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+        
 db_dependency = Annotated[Session, Depends(get_db)]
+check_main_folder("file")
+
 
 @router.get('/paths')
 async def all_uncleaned_paths(in_corpus:bool=False):
