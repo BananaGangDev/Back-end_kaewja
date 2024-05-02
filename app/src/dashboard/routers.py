@@ -73,7 +73,7 @@ def get_stat(tagset_id,db:db_dependency):
     print(checked_document)
     print(roots)
     if (checked_document in [[],False,None]) or (roots in [[],None,False]):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        return Response(content="No data",status_code=status.HTTP_204_NO_CONTENT)
     
     path = []
     for root in roots:
